@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>購入記録</title>
+</head>
+<body>
+    <h1>購入記録</h1>
+    <div id="recordContainer"></div>
+    <br>
+    <h2>購入者ごとの金額合計</h2>
+    <div id="summaryContainer"></div>
+    <br>
+    <a href="form.html"><button>入力フォームに戻る</button></a>
+
+    <script>
+        // 購入記録を表示する関数
+        function displayRecords() {
+            const recordContainer = document.getElementById('recordContainer');
+            const records = JSON.parse(localStorage.getItem('records')) || [];
+
+            if (records.length === 0) {
+                recordContainer.innerHTML = "<p>記録がありません。</p>";
+                return;
+            }
+
+            let html = "<table border='1'><tr><th>購入日</th><th>購入者</th><th>金額</th><th>内容</th><th>操作</th></tr>";
+            records.forEach((record, index) => {
+                html += `<tr>
+                    <td>${record.date}</td>
+                    <td>${record.buyer}</td>
+                    <td>${record.amount}</td>
+                    <td>${record.description}</td>
+                    <td><button onclick="deleteRecord(${index})">削除</button></td>
+                </tr>`;
+            });
+            html += "</table>";
+            recordContainer.innerHTML = html;
+        }
+
+        // 購入者ごとの金額合計を計算して表示する関数
+        function displaySummary() {
+            const summaryContainer = document.getElementById('summaryContainer');
+            const records = JSON.parse(localStorage.getItem('records')) || [];
+
+            if (records.length === 0) {
+                summaryContainer.innerHTML = "<p>記録がありません。</p>";
+                return;
+            }
+
+            // 購入者ごとに金額を集計
+            const summary = {};
+            records.forEach(record => {
+                const buyer = record.buyer;
+                const amount = parseFloat(record.amount);
+
+                if (summary[buyer]) {
+                    summary[buyer] += amount;
+                } else {
+                    summary[buyer] = amount;
+                }
+            });
+
+            // 集計結果を表示
+            let html = "<table border='1'><tr><th>購入者</th><th>金額合計</th></tr>";
+            for (const buyer in summary) {
+                html += `<tr>
+                    <td>${buyer}</td>
+                    <td>${summary[buyer]}</td>
+                </tr>`;
+            }
+            html += "</table>";
+            summaryContainer.innerHTML = html;
+        }
+
+        // レコードを削除する関数
+        function deleteRecord(index) {
+            const records = JSON.parse(localStorage.getItem('records')) || [];
+            if (index >= 0 && index < records.length) {
+                records.splice(index, 1); // 指定したインデックスのレコードを削除
+                localStorage.setItem('records', JSON.stringify(records)); // 更新したデータを保存
+                alert("レコードが削除されました。");
+                displayRecords(); // 更新後の記録を再表示
+                displaySummary(); // 合計金額を再計算
+            } else {
+                alert("削除に失敗しました。");
+            }
+        }
+
+        // ページ読み込み時に記録と集計を表示
+        window.onload = function() {
+            displayRecords();
+            displaySummary();
+        };
+    </script>
+</body>
+</html>
