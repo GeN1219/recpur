@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>購入データ入力</title>
+</head>
+<body>
+    <h1>購入データ入力</h1>
+    <form id="purchaseForm">
+        <label for="date">購入日:</label><br>
+        <input type="date" id="date" name="date" required><br><br>
+        
+        <label for="buyer">購入者:</label><br>
+        <input type="text" id="buyer" name="buyer" required><br><br>
+        
+        <label for="amount">金額:</label><br>
+        <input type="number" id="amount" name="amount" required><br><br>
+        
+        <label for="description">内容:</label><br>
+        <textarea id="description" name="description" required></textarea><br><br>
+        
+        <button type="button" onclick="sendData()">送信</button>
+    </form>
+    <br>
+    <a href="records.html"><button>記録を見る</button></a>
+
+    <script>
+        function sendData() {
+            const formData = {
+                date: document.getElementById('date').value,
+                buyer: document.getElementById('buyer').value,
+                amount: document.getElementById('amount').value,
+                description: document.getElementById('description').value
+            };
+
+            // 保存処理 (localStorageを利用)
+            const records = JSON.parse(localStorage.getItem('records')) || [];
+            records.push(formData);
+            localStorage.setItem('records', JSON.stringify(records));
+
+            alert("データが送信されました！");
+            document.getElementById('purchaseForm').reset();
+        }
+    </script>
+</body>
+</html>
