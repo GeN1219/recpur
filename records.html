@@ -4,18 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>購入記録</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fdf6e3;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #f76c6c;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f76c6c;
+            color: white;
+        }
+        td {
+            font-size: 14px;
+        }
+        button {
+            background-color: #f76c6c;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #f55353;
+        }
+        a button {
+            width: auto;
+            display: block;
+            margin: 20px auto;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
-    <h1>購入記録</h1>
-    <div id="recordContainer"></div>
-    <br>
-    <h2>購入者ごとの金額合計</h2>
-    <div id="summaryContainer"></div>
-    <br>
-    <a href="index.html"><button>入力フォームに戻る</button></a>
+    <div class="container">
+        <h1>購入記録</h1>
+        <div id="recordContainer"></div>
+        <br>
+        <h2>合計支払い金額（月ごと）</h2>
+        <div id="monthlySummaryContainer"></div>
+        <br>
+        <h2>金額差（月ごと）</h2>
+        <div id="comparisonContainer"></div>
+        <br>
+        <a href="index.html"><button>入力フォームに戻る</button></a>
+    </div>
 
     <script>
-        // 購入記録を表示する関数
         function displayRecords() {
             const recordContainer = document.getElementById('recordContainer');
             const records = JSON.parse(localStorage.getItem('records')) || [];
@@ -25,7 +83,7 @@
                 return;
             }
 
-            let html = "<table border='1'><tr><th>購入日</th><th>購入者</th><th>金額</th><th>内容</th><th>操作</th></tr>";
+            let html = "<table><tr><th>購入日</th><th>購入者</th><th>金額</th><th>内容</th><th>操作</th></tr>";
             records.forEach((record, index) => {
                 html += `<tr>
                     <td>${record.date}</td>
@@ -39,61 +97,110 @@
             recordContainer.innerHTML = html;
         }
 
-        // 購入者ごとの金額合計を計算して表示する関数
-        function displaySummary() {
-            const summaryContainer = document.getElementById('summaryContainer');
+        function calculateMonthlySummary() {
             const records = JSON.parse(localStorage.getItem('records')) || [];
+            const monthlySummaryContainer = document.getElementById('monthlySummaryContainer');
 
             if (records.length === 0) {
-                summaryContainer.innerHTML = "<p>記録がありません。</p>";
-                return;
+                monthlySummaryContainer.innerHTML = "<p>記録がありません。</p>";
+                return {};
             }
 
-            // 購入者ごとに金額を集計
-            const summary = {};
+            const monthlySummary = {};
             records.forEach(record => {
+                const date = new Date(record.date);
+                const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                 const buyer = record.buyer;
                 const amount = parseFloat(record.amount);
 
-                if (summary[buyer]) {
-                    summary[buyer] += amount;
+                if (!monthlySummary[month]) {
+                    monthlySummary[month] = {};
+                }
+
+                if (monthlySummary[month][buyer]) {
+                    monthlySummary[month][buyer] += amount;
                 } else {
-                    summary[buyer] = amount;
+                    monthlySummary[month][buyer] = amount;
                 }
             });
 
-            // 集計結果を表示
-            let html = "<table border='1'><tr><th>購入者</th><th>金額合計</th></tr>";
-            for (const buyer in summary) {
+            // 表示
+            let html = "<table><tr><th>購入月</th><th>購入者</th><th>金額合計</th></tr>";
+            for (const month in monthlySummary) {
+                for (const buyer in monthlySummary[month]) {
+                    html += `<tr>
+                        <td>${month}</td>
+                        <td>${buyer}</td>
+                        <td>${monthlySummary[month][buyer]}</td>
+                    </tr>`;
+                }
+            }
+            html += "</table>";
+            monthlySummaryContainer.innerHTML = html;
+
+            return monthlySummary;
+        }
+
+        function calculateMonthlyComparison(monthlySummary) {
+            const comparisonContainer = document.getElementById('comparisonContainer');
+
+            if (Object.keys(monthlySummary).length === 0) {
+                comparisonContainer.innerHTML = "<p>記録がありません。</p>";
+                return;
+            }
+
+            let html = "<table><tr><th>購入月</th><th>比較結果</th></tr>";
+            for (const month in monthlySummary) {
+                const buyers = Object.keys(monthlySummary[month]);
+                if (buyers.length < 2) continue; // 比較する相手がいない場合はスキップ
+
+                const comparisons = [];
+                for (let i = 0; i < buyers.length; i++) {
+                    for (let j = i + 1; j < buyers.length; j++) {
+                        const buyer1 = buyers[i];
+                        const buyer2 = buyers[j];
+                        const diff = monthlySummary[month][buyer1] - monthlySummary[month][buyer2];
+
+                        if (diff > 0) {
+                            comparisons.push(`${buyer1}の方が${diff}円多く払っています`);
+                            // comparisons.push(`${buyer1}の方が${diff}円多く払いました（${buyer2}と比較）`);
+                        } else if (diff < 0) {
+                            comparisons.push(`${buyer2}の方が${Math.abs(diff)}円多く払っています`);
+                            // comparisons.push(`${buyer2}の方が${Math.abs(diff)}円多く払いました（${buyer1}と比較）`);
+                        } else {
+                            comparisons.push(`${buyer1}と${buyer2}の支払い金額は同じです`);
+                        }
+                    }
+                }
+
                 html += `<tr>
-                    <td>${buyer}</td>
-                    <td>${summary[buyer]}</td>
+                    <td>${month}</td>
+                    <td>${comparisons.join("<br>")}</td>
                 </tr>`;
             }
             html += "</table>";
-            summaryContainer.innerHTML = html;
+            comparisonContainer.innerHTML = html;
         }
 
-        // レコードを削除する関数
         function deleteRecord(index) {
             const records = JSON.parse(localStorage.getItem('records')) || [];
             if (index >= 0 && index < records.length) {
-                records.splice(index, 1); // 指定したインデックスのレコードを削除
-                localStorage.setItem('records', JSON.stringify(records)); // 更新したデータを保存
+                records.splice(index, 1);
+                localStorage.setItem('records', JSON.stringify(records));
                 alert("レコードが削除されました。");
-                displayRecords(); // 更新後の記録を再表示
-                displaySummary(); // 合計金額を再計算
+                updateAllViews();
             } else {
                 alert("削除に失敗しました。");
             }
         }
 
-        // ページ読み込み時に記録と集計を表示
-        window.onload = function() {
+        function updateAllViews() {
             displayRecords();
-            displaySummary();
-        };
+            const monthlySummary = calculateMonthlySummary();
+            calculateMonthlyComparison(monthlySummary);
+        }
+
+        window.onload = updateAllViews;
     </script>
 </body>
 </html>
-

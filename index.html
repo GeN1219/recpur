@@ -4,22 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>購入データ入力</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fdf6e3;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #f76c6c;
+        }
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            padding-right: 50px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        select, input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #f76c6c;
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #f55353;
+        }
+        a button {
+            width: auto;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
     <h1>購入データ入力</h1>
     <form id="purchaseForm">
-        <label for="date">購入日:</label><br>
-        <input type="date" id="date" name="date" required><br><br>
-        
-        <label for="buyer">購入者:</label><br>
-        <input type="text" id="buyer" name="buyer" required><br><br>
-        
-        <label for="amount">金額:</label><br>
-        <input type="number" id="amount" name="amount" required><br><br>
-        
-        <label for="description">内容:</label><br>
-        <textarea id="description" name="description" required></textarea><br><br>
-        
+        <label for="date">購入日:</label>
+        <select id="date" name="date" required>
+            <option value="2024-11-01">2024-11-01</option>
+            <option value="2024-11-02">2024-11-02</option>
+            <option value="2024-11-03">2024-11-03</option>
+            <!-- 必要に応じて日付を追加 -->
+        </select>
+
+        <label for="buyer">購入者:</label>
+        <select id="buyer" name="buyer" required>
+            <option value="space">---</option>
+            <option value="げん">げん</option>
+            <option value="あやの">あやの</option>
+            <!-- 必要に応じて購入者を追加 -->
+        </select>
+
+        <label for="amount">金額:</label>
+        <input type="number" id="amount" name="amount" required placeholder="金額を入力">
+
+        <label for="description">内容:</label>
+        <textarea id="description" name="description" rows="4" required placeholder="内容を入力"></textarea>
+
         <button type="button" onclick="sendData()">送信</button>
     </form>
     <br>
