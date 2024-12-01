@@ -59,19 +59,13 @@
     <h1>購入データ入力</h1>
     <form id="purchaseForm">
         <label for="date">購入日:</label>
-        <select id="date" name="date" required>
-            <option value="2024-11-01">2024-11-01</option>
-            <option value="2024-11-02">2024-11-02</option>
-            <option value="2024-11-03">2024-11-03</option>
-            <!-- 必要に応じて日付を追加 -->
-        </select>
+        <input type="date" id="date" name="date" required>
 
         <label for="buyer">購入者:</label>
         <select id="buyer" name="buyer" required>
             <option value="space">---</option>
             <option value="げん">げん</option>
             <option value="あやの">あやの</option>
-            <!-- 必要に応じて購入者を追加 -->
         </select>
 
         <label for="amount">金額:</label>
