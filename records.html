@@ -64,6 +64,9 @@
         <h1>購入記録</h1>
         <div id="recordContainer"></div>
         <br>
+        <h2>月ごとのジャンルごとの合計金額</h2>
+        <div id="genreSummaryContainer"></div>
+        <br>
         <h2>合計支払い金額（月ごと）</h2>
         <div id="monthlySummaryContainer"></div>
         <br>
@@ -83,18 +86,56 @@
                 return;
             }
 
-            let html = "<table><tr><th>購入日</th><th>購入者</th><th>金額</th><th>内容</th><th>操作</th></tr>";
+            let html = "<table><tr><th>購入日</th><th>購入者</th><th>金額</th><th>ジャンル</th><th>内容</th><th>操作</th></tr>";
             records.forEach((record, index) => {
                 html += `<tr>
                     <td>${record.date}</td>
                     <td>${record.buyer}</td>
                     <td>${record.amount}</td>
+                    <td>${record.genre}</td>
                     <td>${record.description}</td>
                     <td><button onclick="deleteRecord(${index})">削除</button></td>
                 </tr>`;
             });
             html += "</table>";
             recordContainer.innerHTML = html;
+        }
+
+        function calculateGenreSummary() {
+            const records = JSON.parse(localStorage.getItem('records')) || [];
+            const genreSummaryContainer = document.getElementById('genreSummaryContainer');
+
+            if (records.length === 0) {
+                genreSummaryContainer.innerHTML = "<p>記録がありません。</p>";
+                return;
+            }
+
+            const genreSummary = {};
+            records.forEach(record => {
+                const date = new Date(record.date);
+                const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const genre = record.genre;
+                const amount = parseFloat(record.amount);
+
+                if (!genreSummary[month]) {
+                    genreSummary[month] = {};
+                }
+
+                genreSummary[month][genre] = (genreSummary[month][genre] || 0) + amount;
+            });
+
+            let html = "<table><tr><th>購入月</th><th>ジャンル</th><th>金額合計</th></tr>";
+            for (const month in genreSummary) {
+                for (const genre in genreSummary[month]) {
+                    html += `<tr>
+                        <td>${month}</td>
+                        <td>${genre}</td>
+                        <td>${genreSummary[month][genre]}</td>
+                    </tr>`;
+                }
+            }
+            html += "</table>";
+            genreSummaryContainer.innerHTML = html;
         }
 
         function calculateMonthlySummary() {
@@ -117,14 +158,9 @@
                     monthlySummary[month] = {};
                 }
 
-                if (monthlySummary[month][buyer]) {
-                    monthlySummary[month][buyer] += amount;
-                } else {
-                    monthlySummary[month][buyer] = amount;
-                }
+                monthlySummary[month][buyer] = (monthlySummary[month][buyer] || 0) + amount;
             });
 
-            // 表示
             let html = "<table><tr><th>購入月</th><th>購入者</th><th>金額合計</th></tr>";
             for (const month in monthlySummary) {
                 for (const buyer in monthlySummary[month]) {
@@ -152,7 +188,7 @@
             let html = "<table><tr><th>購入月</th><th>比較結果</th></tr>";
             for (const month in monthlySummary) {
                 const buyers = Object.keys(monthlySummary[month]);
-                if (buyers.length < 2) continue; // 比較する相手がいない場合はスキップ
+                if (buyers.length < 2) continue;
 
                 const comparisons = [];
                 for (let i = 0; i < buyers.length; i++) {
@@ -163,10 +199,8 @@
 
                         if (diff > 0) {
                             comparisons.push(`${buyer1}の方が${diff}円多く払っています`);
-                            // comparisons.push(`${buyer1}の方が${diff}円多く払いました（${buyer2}と比較）`);
                         } else if (diff < 0) {
                             comparisons.push(`${buyer2}の方が${Math.abs(diff)}円多く払っています`);
-                            // comparisons.push(`${buyer2}の方が${Math.abs(diff)}円多く払いました（${buyer1}と比較）`);
                         } else {
                             comparisons.push(`${buyer1}と${buyer2}の支払い金額は同じです`);
                         }
@@ -196,6 +230,7 @@
 
         function updateAllViews() {
             displayRecords();
+            calculateGenreSummary();
             const monthlySummary = calculateMonthlySummary();
             calculateMonthlyComparison(monthlySummary);
         }

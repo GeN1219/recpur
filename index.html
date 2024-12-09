@@ -71,6 +71,18 @@
         <label for="amount">金額:</label>
         <input type="number" id="amount" name="amount" required placeholder="金額を入力">
 
+        <label for="genre">ジャンル:</label>
+        <select id="genre" name="genre" required>
+            <option value="">---</option>
+            <option value="食費">食費</option>
+            <option value="日用品">日用品</option>
+            <option value="家具・家電">家具・家電</option>
+            <option value="インフラ（家賃含む）">インフラ（家賃含む）</option>
+            <option value="娯楽">娯楽・趣味</option>
+            <option value="旅行">旅行</option>
+            <option value="その他">その他</option>
+        </select>
+
         <label for="description">内容:</label>
         <textarea id="description" name="description" rows="4" required placeholder="内容を入力"></textarea>
 
@@ -85,10 +97,10 @@
                 date: document.getElementById('date').value,
                 buyer: document.getElementById('buyer').value,
                 amount: document.getElementById('amount').value,
-                description: document.getElementById('description').value
+                description: document.getElementById('description').value,
+                genre: document.getElementById('genre').value
             };
 
-            // 保存処理 (localStorageを利用)
             const records = JSON.parse(localStorage.getItem('records')) || [];
             records.push(formData);
             localStorage.setItem('records', JSON.stringify(records));
