@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>購入データ入力</title>
     <style>
+        @media (max-width: 767px) {
+    input[type="date"] {
+        width: 100%; /* 親要素の幅に合わせて入力フォームを広げる */
+        padding: 10px; /* パディングで入力エリアのスペースを広げる */
+        font-size: 16px; /* モバイルでも見やすいサイズに調整 */
+    }
+    .container {
+        padding: 20px 10px; /* モバイルでは左右の余白を少し小さくする */
+    }
+}
+
         body {
             font-family: Arial, sans-serif;
             background-color: #fdf6e3;
