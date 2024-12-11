@@ -77,7 +77,15 @@
     </div>
 
     <script>
+        // URLのクエリパラメータから年月を取得
+        function getMonthFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('month');
+        }
+
+        // 購入記録を表示
         function displayRecords() {
+            const selectedMonth = getMonthFromUrl();
             const recordContainer = document.getElementById('recordContainer');
             const records = JSON.parse(localStorage.getItem('records')) || [];
 
@@ -86,8 +94,22 @@
                 return;
             }
 
+            let filteredRecords = records;
+            if (selectedMonth) {
+                filteredRecords = records.filter(record => {
+                    const date = new Date(record.date);
+                    const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    return month === selectedMonth;
+                });
+            }
+
+            if (filteredRecords.length === 0) {
+                recordContainer.innerHTML = "<p>選択された年月の記録はありません。</p>";
+                return;
+            }
+
             let html = "<table><tr><th>購入日</th><th>購入者</th><th>金額</th><th>ジャンル</th><th>内容</th><th>操作</th></tr>";
-            records.forEach((record, index) => {
+            filteredRecords.forEach((record, index) => {
                 html += `<tr>
                     <td>${record.date}</td>
                     <td>${record.buyer}</td>
@@ -99,10 +121,15 @@
             });
             html += "</table>";
             recordContainer.innerHTML = html;
+
+            // フィルタリングされたデータに基づいて集計を行う
+            calculateGenreSummary(filteredRecords);
+            const monthlySummary = calculateMonthlySummary(filteredRecords);
+            calculateMonthlyComparison(monthlySummary);
         }
 
-        function calculateGenreSummary() {
-            const records = JSON.parse(localStorage.getItem('records')) || [];
+        // ジャンルごとの合計金額
+        function calculateGenreSummary(records) {
             const genreSummaryContainer = document.getElementById('genreSummaryContainer');
 
             if (records.length === 0) {
@@ -138,8 +165,8 @@
             genreSummaryContainer.innerHTML = html;
         }
 
-        function calculateMonthlySummary() {
-            const records = JSON.parse(localStorage.getItem('records')) || [];
+        // 月ごとの支払い合計
+        function calculateMonthlySummary(records) {
             const monthlySummaryContainer = document.getElementById('monthlySummaryContainer');
 
             if (records.length === 0) {
@@ -177,6 +204,7 @@
             return monthlySummary;
         }
 
+        // 月ごとの金額差
         function calculateMonthlyComparison(monthlySummary) {
             const comparisonContainer = document.getElementById('comparisonContainer');
 
@@ -216,26 +244,21 @@
             comparisonContainer.innerHTML = html;
         }
 
+        // レコード削除
         function deleteRecord(index) {
             const records = JSON.parse(localStorage.getItem('records')) || [];
             if (index >= 0 && index < records.length) {
                 records.splice(index, 1);
                 localStorage.setItem('records', JSON.stringify(records));
                 alert("レコードが削除されました。");
-                updateAllViews();
+                displayRecords();
             } else {
                 alert("削除に失敗しました。");
             }
         }
 
-        function updateAllViews() {
-            displayRecords();
-            calculateGenreSummary();
-            const monthlySummary = calculateMonthlySummary();
-            calculateMonthlyComparison(monthlySummary);
-        }
-
-        window.onload = updateAllViews;
+        // ページ読み込み時にデータを表示
+        window.onload = displayRecords;
     </script>
 </body>
 </html>

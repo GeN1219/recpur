@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年月選択</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fdf6e3;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #f76c6c;
+        }
+        label, select {
+            display: block;
+            margin: 20px auto;
+            font-size: 16px;
+            padding: 10px;
+        }
+        button {
+            background-color: #f76c6c;
+            color: white;
+            font-size: 16px;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+        }
+        button:hover {
+            background-color: #f55353;
+        }
+    </style>
+</head>
+<body>
+    <h1>表示する年月を選択</h1>
+    <label for="monthSelect">年月を選択:</label>
+    <select id="monthSelect">
+        <option value="">-- 選択してください --</option>
+    </select>
+    <button onclick="goToRecords()">記録を表示</button>
+
+    <script>
+        // ローカルストレージから記録を取得して、年月のリストを作成
+        function loadAvailableMonths() {
+            const records = JSON.parse(localStorage.getItem('records')) || [];
+            const months = new Set();
+
+            records.forEach(record => {
+                const date = new Date(record.date);
+                const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                months.add(month);
+            });
+
+            const monthSelect = document.getElementById('monthSelect');
+            months.forEach(month => {
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            });
+        }
+
+        // 選択された年月をURLパラメータに渡してrecords.htmlへ遷移
+        function goToRecords() {
+            const selectedMonth = document.getElementById('monthSelect').value;
+            if (selectedMonth) {
+                window.location.href = `records.html?month=${selectedMonth}`;
+            } else {
+                alert("年月を選択してください。");
+            }
+        }
+
+        // ページ読み込み時に年月をロード
+        window.onload = loadAvailableMonths;
+    </script>
+</body>
+</html>
